@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # Frontend - Vue.js
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: health_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - health_network
+
+  # Backend - Flask
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: health_backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - FLASK_APP=app
+      - FLASK_ENV=development
+      - DATABASE_URL=mysql+pymysql://health_user:health_password@database:3306/health_db
+      - SECRET_KEY=your-secret-key-change-in-production
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - health_network
+
+  # Database - MySQL
+  database:
+    image: mysql:8.0
+    container_name: health_database
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=health_db
+      - MYSQL_USER=health_user
+      - MYSQL_PASSWORD=health_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - health_network
+
+  # Ollama - AI Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: health_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - health_network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+networks:
+  health_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  ollama_data:
