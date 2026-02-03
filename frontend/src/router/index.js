@@ -10,6 +10,17 @@ import AdminDashboard from '@/pages/admin/Dashboard.vue'
 import ClinicianDashboard from '@/pages/clinician/Dashboard.vue'
 import PatientDashboard from '@/pages/patient/Dashboard.vue'
 
+// Admin pages
+import AdminUsers from '@/pages/admin/Users.vue'
+import AdminMedications from '@/pages/admin/Medications.vue'
+
+// Clinician pages
+import ClinicianPatients from '@/pages/clinician/Patients.vue'
+import ClinicianPrescriptions from '@/pages/clinician/Prescriptions.vue'
+
+// Patient pages
+import PatientCalendar from '@/pages/patient/Calendar.vue'
+
 // Layouts
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
@@ -37,6 +48,7 @@ const routes = [
       }
     ]
   },
+  // Admin routes
   {
     path: '/admin',
     component: DashboardLayout,
@@ -46,9 +58,20 @@ const routes = [
         path: 'dashboard',
         name: 'admin.dashboard',
         component: AdminDashboard
+      },
+      {
+        path: 'users',
+        name: 'admin.users',
+        component: AdminUsers
+      },
+      {
+        path: 'medications',
+        name: 'admin.medications',
+        component: AdminMedications
       }
     ]
   },
+  // Clinician routes
   {
     path: '/clinician',
     component: DashboardLayout,
@@ -58,9 +81,25 @@ const routes = [
         path: 'dashboard',
         name: 'clinician.dashboard',
         component: ClinicianDashboard
+      },
+      {
+        path: 'patients',
+        name: 'clinician.patients',
+        component: ClinicianPatients
+      },
+      {
+        path: 'prescriptions',
+        name: 'clinician.prescriptions',
+        component: ClinicianPrescriptions
+      },
+      {
+        path: 'prescriptions/create',
+        name: 'clinician-prescription-create',
+        component: ClinicianPrescriptions
       }
     ]
   },
+  // Patient routes
   {
     path: '/patient',
     component: DashboardLayout,
@@ -70,6 +109,11 @@ const routes = [
         path: 'dashboard',
         name: 'patient.dashboard',
         component: PatientDashboard
+      },
+      {
+        path: 'calendar',
+        name: 'patient.calendar',
+        component: PatientCalendar
       }
     ]
   },

@@ -29,13 +29,18 @@ async function handleLogout() {
 const navItems = computed(() => {
   const baseItems = {
     admin: [
-      { name: 'Dashboard', path: '/admin/dashboard', icon: 'home' }
+      { name: 'Dashboard', path: '/admin/dashboard', icon: 'home' },
+      { name: 'Utilizadores', path: '/admin/users', icon: 'users' },
+      { name: 'Medicamentos', path: '/admin/medications', icon: 'pill' },
     ],
     clinician: [
-      { name: 'Dashboard', path: '/clinician/dashboard', icon: 'home' }
+      { name: 'Dashboard', path: '/clinician/dashboard', icon: 'home' },
+      { name: 'Pacientes', path: '/clinician/patients', icon: 'users' },
+      { name: 'Prescricoes', path: '/clinician/prescriptions', icon: 'clipboard' },
     ],
     patient: [
-      { name: 'Dashboard', path: '/patient/dashboard', icon: 'home' }
+      { name: 'Dashboard', path: '/patient/dashboard', icon: 'home' },
+      { name: 'Calendario', path: '/patient/calendar', icon: 'calendar' },
     ]
   }
   return baseItems[userRole.value] || []
