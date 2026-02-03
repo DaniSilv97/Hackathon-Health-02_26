@@ -20,15 +20,33 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
+    _password = db.Column('password', db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default=UserRole.PATIENT)
     is_active = db.Column(db.Boolean, default=True)
+    email_verified_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    def __init__(self, **kwargs):
+        """Initialize user and hash password if provided."""
+        password = kwargs.pop('password', None)
+        super().__init__(**kwargs)
+        if password:
+            self.set_password(password)
+
+    @property
+    def password(self):
+        """Password getter (returns hash)."""
+        return self._password
+
+    @password.setter
+    def password(self, value):
+        """Password setter (auto-hashes)."""
+        self.set_password(value)
+
     def set_password(self, password):
         """Hash and set the user's password."""
-        self.password = bcrypt.hashpw(
+        self._password = bcrypt.hashpw(
             password.encode('utf-8'),
             bcrypt.gensalt()
         ).decode('utf-8')
@@ -37,7 +55,7 @@ class User(UserMixin, db.Model):
         """Check if the provided password matches the hash."""
         return bcrypt.checkpw(
             password.encode('utf-8'),
-            self.password.encode('utf-8')
+            self._password.encode('utf-8')
         )
 
     def is_admin(self):

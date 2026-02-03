@@ -37,4 +37,8 @@ def create_app(config_class=Config):
         from app.models.user import User
         db.create_all()
 
+    # Register CLI commands
+    from database.commands import register_commands
+    register_commands(app)
+
     return app
