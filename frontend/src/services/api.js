@@ -9,10 +9,21 @@ const api = axios.create({
   }
 })
 
-// Request interceptor
+// Request interceptor - Add token to every request
 api.interceptors.request.use(
   (config) => {
-    // Token is set in the auth store
+    // Get token from localStorage (pinia-plugin-persistedstate stores it there)
+    const authData = localStorage.getItem('health-auth')
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData)
+        if (parsed.token) {
+          config.headers.Authorization = `Bearer ${parsed.token}`
+        }
+      } catch (e) {
+        // Invalid JSON in localStorage
+      }
+    }
     return config
   },
   (error) => {
