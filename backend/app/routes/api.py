@@ -1,4 +1,5 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt, verify_jwt_in_request
 from app.controllers.dashboard_controller import DashboardController
 from app.controllers.medication_controller import MedicationController
 from app.controllers.prescription_controller import PrescriptionController
@@ -7,6 +8,31 @@ from app.controllers.user_controller import UserController
 from app.controllers.ollama_controller import OllamaController
 
 api_bp = Blueprint('api', __name__)
+
+
+# Debug endpoint to test JWT
+@api_bp.route('/test-jwt', methods=['GET'])
+def test_jwt():
+    """Test JWT token - shows what's happening"""
+    auth_header = request.headers.get('Authorization', '')
+    print(f"Auth header received: {auth_header[:50]}..." if auth_header else "No auth header")
+
+    try:
+        verify_jwt_in_request()
+        identity = get_jwt_identity()
+        claims = get_jwt()
+        return jsonify({
+            'status': 'JWT valid',
+            'identity': identity,
+            'claims': claims
+        }), 200
+    except Exception as e:
+        print(f"JWT Error: {type(e).__name__}: {str(e)}")
+        return jsonify({
+            'status': 'JWT error',
+            'error_type': type(e).__name__,
+            'error': str(e)
+        }), 422
 
 # ==================== Dashboard Routes ====================
 api_bp.add_url_rule('/admin/dashboard', 'admin_dashboard', DashboardController.admin_dashboard, methods=['GET'])
