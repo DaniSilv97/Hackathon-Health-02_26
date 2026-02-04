@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -22,6 +22,27 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     jwt.init_app(app)
     CORS(app, supports_credentials=True)
+
+    # JWT error handlers for debugging
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error_string):
+        print(f"JWT Invalid Token: {error_string}")
+        return jsonify({'error': 'Invalid token', 'message': error_string}), 401
+
+    @jwt.unauthorized_loader
+    def unauthorized_callback(error_string):
+        print(f"JWT Unauthorized: {error_string}")
+        return jsonify({'error': 'Unauthorized', 'message': error_string}), 401
+
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        print(f"JWT Expired: {jwt_payload}")
+        return jsonify({'error': 'Token expired'}), 401
+
+    @jwt.token_verification_failed_loader
+    def token_verification_failed_callback(jwt_header, jwt_payload):
+        print(f"JWT Verification Failed: {jwt_payload}")
+        return jsonify({'error': 'Token verification failed'}), 401
 
     # Register routes
     from app.routes.web import web_bp
