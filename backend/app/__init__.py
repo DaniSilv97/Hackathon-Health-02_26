@@ -21,7 +21,14 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     login_manager.init_app(app)
     jwt.init_app(app)
-    CORS(app, supports_credentials=True)
+
+    # CORS configuration - explicitly allow Authorization header
+    CORS(app,
+         origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+         supports_credentials=True,
+         allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+         expose_headers=["Authorization"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
 
     # JWT error handlers for debugging
     @jwt.invalid_token_loader

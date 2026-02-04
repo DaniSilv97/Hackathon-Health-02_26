@@ -11,6 +11,25 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false)
   const error = ref(null)
 
+  // Initialize axios header from persisted token on store creation
+  function initializeFromStorage() {
+    const authData = localStorage.getItem('health-auth')
+    if (authData) {
+      try {
+        const parsed = JSON.parse(authData)
+        if (parsed.token) {
+          api.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`
+          console.log('Auth initialized from storage')
+        }
+      } catch (e) {
+        console.error('Failed to initialize auth from storage:', e)
+      }
+    }
+  }
+
+  // Call immediately when store is created
+  initializeFromStorage()
+
   // Getters
   const isAuthenticated = computed(() => !!token.value && !!user.value)
   const isAdmin = computed(() => user.value?.role === 'admin')
