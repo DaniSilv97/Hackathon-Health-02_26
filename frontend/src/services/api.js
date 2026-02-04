@@ -12,27 +12,38 @@ const api = axios.create({
 // Request interceptor - Add token to every request
 api.interceptors.request.use(
   (config) => {
-    // First check if Authorization header is already set (from login)
+    // Skip for refresh endpoint to avoid loops
+    if (config.url?.includes('/auth/refresh')) {
+      return config
+    }
+
+    // First check if Authorization header is already set
     if (config.headers.Authorization) {
+      console.log('Token already in headers')
       return config
     }
 
     // Check axios defaults (set by auth store after login)
     if (api.defaults.headers.common['Authorization']) {
       config.headers.Authorization = api.defaults.headers.common['Authorization']
+      console.log('Token from axios defaults')
       return config
     }
 
     // Fallback: Get token from localStorage (for page refresh)
     const authData = localStorage.getItem('health-auth')
+    console.log('localStorage health-auth:', authData ? 'exists' : 'not found')
+
     if (authData) {
       try {
         const parsed = JSON.parse(authData)
+        console.log('Parsed auth data keys:', Object.keys(parsed))
         if (parsed.token) {
           config.headers.Authorization = `Bearer ${parsed.token}`
+          console.log('Token added from localStorage')
         }
       } catch (e) {
-        // Invalid JSON in localStorage
+        console.error('Failed to parse auth data:', e)
       }
     }
     return config
@@ -42,30 +53,16 @@ api.interceptors.request.use(
   }
 )
 
-// Response interceptor
+// Response interceptor - simplified, no auto-refresh to avoid loops
 api.interceptors.response.use(
   (response) => {
     return response
   },
   async (error) => {
-    const originalRequest = error.config
-
-    // Handle 401 errors (unauthorized)
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
-
-      // Try to refresh the token
-      const { useAuthStore } = await import('@/stores/auth')
-      const authStore = useAuthStore()
-
-      const refreshed = await authStore.refreshAccessToken()
-      if (refreshed) {
-        // Retry the original request
-        originalRequest.headers['Authorization'] = `Bearer ${authStore.token}`
-        return api(originalRequest)
-      }
+    // If 401, just reject - let the component handle logout
+    if (error.response?.status === 401) {
+      console.log('Got 401 - token may be invalid or expired')
     }
-
     return Promise.reject(error)
   }
 )
