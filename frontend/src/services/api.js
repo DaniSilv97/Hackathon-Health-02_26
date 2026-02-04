@@ -12,7 +12,18 @@ const api = axios.create({
 // Request interceptor - Add token to every request
 api.interceptors.request.use(
   (config) => {
-    // Get token from localStorage (pinia-plugin-persistedstate stores it there)
+    // First check if Authorization header is already set (from login)
+    if (config.headers.Authorization) {
+      return config
+    }
+
+    // Check axios defaults (set by auth store after login)
+    if (api.defaults.headers.common['Authorization']) {
+      config.headers.Authorization = api.defaults.headers.common['Authorization']
+      return config
+    }
+
+    // Fallback: Get token from localStorage (for page refresh)
     const authData = localStorage.getItem('health-auth')
     if (authData) {
       try {
